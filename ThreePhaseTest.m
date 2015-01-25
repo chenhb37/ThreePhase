@@ -6,7 +6,7 @@ duplicate = 5;
 for setCounter = 1:size(dataSets,1)
     if dataSets(setCounter).isdir ==1 && strcmp(dataSets(setCounter).name,'.') ==0 && strcmp(dataSets(setCounter).name,'..') == 0 &&strcmp(dataSets(setCounter).name,'Set1 - aggiornato')==0 ...
         && strcmp(dataSets(setCounter).name,'Set4 - aggiornato')==0
-        dataSources = dir(strcat(directory,dataSets(setCounter).name,'\*.dat'));
+        dataSources = dir(strcat(directory,dataSets(setCounter).name,'\F*.dat'));
         for sourceCounter = 1:size(dataSources,1)
             fileName = strcat(directory,dataSets(setCounter).name,'\',dataSources(sourceCounter).name);
             fprintf(1,'%s\n',fileName);
@@ -52,14 +52,6 @@ for setCounter = 1:size(dataSets,1)
                     = DataForPhase2(depotList,satellites2,demands3,routes,maxSolutionLen);
                 vNum = double(desc(6)) .* ones(1,dn);
                 [x2,fval2,~,~] = AllocatePhaseCplex(nd,dn,vNum,capacity,dis,dems);
-                
-                b = [1   7  10   1   2   8   2   3   4   6   5   3   3  12   3];
-                sm = Edge2StringModel(x2,size(satellites2,1));
-                if  size(b) == size(sm) 
-                    if b == Edge2StringModel(x2,size(satellites2,1))
-                     sm = Edge2StringModel(x2,size(satellites2,1));
-                    end
-                end
                 
                 %phase 1
                 depotList = nodes(1,1:2);
