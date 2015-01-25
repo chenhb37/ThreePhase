@@ -1,0 +1,9 @@
+2 Echelon VRP data files
+
+These data files are the problems solved in Jesus Gonzalez Feliu, Guido Perboli, Roberto Tadei and Daniele Vigo, "The Two-Echelon Vehicle Routing Problem", submitted to Transportation Science (1st review).
+
+The test problems are organized in 4 sets. The tests of each set are in a different directory. Each directory contains a txt file describing the instance file format, the test files and a table in pdf showing the best results for each instance.
+
+The files are of size 150Kb (approximately).
+
+

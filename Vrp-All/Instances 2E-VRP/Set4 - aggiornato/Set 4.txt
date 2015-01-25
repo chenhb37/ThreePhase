@@ -1,0 +1,25 @@
+SET 4
+
+These files are organized as follows:
+
+NAME : Name of the Instance
+COMMENT : Comment
+TYPE : 2ECVRP (Two-Echelon Capacitated Vehicle Routing Problem)
+DIMENSION : Total number of nodes, including depot and satellites
+SATELLITES : Number of satellites
+CUSTOMERS : Number of Customers
+EDGE_WEIGHT_TYPE : In all these instances, the travelling costs are eucliedan 2D distances
+FLEET_SECTION (description of the vehicles' characteristics)
+L1CAPACITY : Capacity of 1st-level vehicles
+L2CAPACITY : Capacity of 2nd-level vehicles
+L1FLEET: Number of 1st-level vehicles
+L1FLEET: Number of 2nd-level vehicles
+NODE_WEIGHT_DEMAND_SECTION
+In this section are enumerated the coordinates of the nodes, the demands of the customers and the capacity of the depot and the satellites.
+The customers are indicated by the prefix c, the satellites by s and the depot by d.
+For the customers, the first column indicates the number of the node, the second the x coordinate, third the Y coordinate and the fourth the demand of the node. The last column indicates the end of line.
+For the satellites, node number and coordinates are defined in the same way. The fourh colum indicates the capacity of the satellite (in number of 2nd-level vehicles starting their routes from the satellite) and last column the end of line.
+For the depot, node number and coordinates are defined in the same way. The fourh colum indicates the capacity of the depot (100000, to indicate whether it is uncapacitated) and last column the end of line.
+-1
+EOF
+
