@@ -38,28 +38,24 @@ __global__ void simulatedAnnealingKernel(int *route,
 	//每个线程分配3*solutonLen*4 Byte 大小的共享内存
 	 
 	//共享内存变量  
-	int *solution = &solutionArray[threadIdx.x*(solutionLen*2+6*MAXVN)]; //solutionLen
+	int *solution = &solutionArray[threadIdx.x*(solutionLen*2+7*MAXVN)]; //solutionLen
 
     int *curSolution = (int *)&solution[solutionLen];  //solutionLen
 	double *dice =(double*)&curSolution[solutionLen];
-	int *cusIndex = (int*)&dice[1];
+	double *dis = (double*)&dice[1];
+	double *newDis = (double*)&dis[1];
+	int *cusIndex = (int*)&newDis[1];
 	int *range = (int*)&cusIndex[1];
 	int *v = (int*)&range[1];
 	int *improvedTryCounter = (int*)&v[1];
     int *demandCounter=(int*)&improvedTryCounter[MAXVN]; //4
 	int *routeStart=(int*)&demandCounter[MAXVN];  //6
 	double *acc = (double*)&routeStart[MAXVN+1];    //5
-
-
-	
-
-	
+	int *r1=v;
+	int *r2=range;
+	int *inter =cusIndex;
 
 	//寄存器变量
-	/*int demandCounter[4]={0};
-	int routeStart[6] = {0};
-	double acc[5] = {0};*/
-
     int maxDemandIndex = 0;
 	double demandSum = 0;
     double minCost = 100000;
@@ -70,9 +66,6 @@ __global__ void simulatedAnnealingKernel(int *route,
 	int cur=0;
 	int i=0;
 	int maxDemand=0;
-	int *r1=v;
-	int *r2=range;
-	int *inter =cusIndex;
 	int nextRand = 0;
 	int strategy = 0;
 	double temp = tempParam;//cr = 0.001;//tempPara;
@@ -80,12 +73,12 @@ __global__ void simulatedAnnealingKernel(int *route,
 
 
 	//计算距离
-	double dis = 0;
+    *dis = 0;
 	int len = 1;
 	for(int i =1; bestSolution[i]!=0; i++){
 		  pre = bestSolution[i-1];
 		  cur = bestSolution[i];
-		  dis += distances[(pre-1)*nodeNum+cur-1];
+		  *dis += distances[(pre-1)*nodeNum+cur-1];
 		  len ++;
 	}
 
@@ -93,8 +86,34 @@ __global__ void simulatedAnnealingKernel(int *route,
 		solution[i] = bestSolution[i];
 	    curSolution[i] = bestSolution[i];
      }
+	//检测是否超载
+	maxDemandIndex = 0;
+	demandSum = 0;
+	*v = 0;
+	demandCounter[*v] = 0;
+	routeStart[*v] = 0;
+	for(i = 1;i<len; i++){
+	   if (solution[i] == depot+1){
+           if( demandCounter[*v] > demandCounter[maxDemandIndex])
+                 maxDemandIndex = *v;
+			(*v)++;
+			demandCounter[*v] = 0;
+			routeStart[*v] = i;
+			}
+		else{
+			demandCounter[*v]+= demands[solution[i]-1];
+			demandSum += demands[solution[i]-1];
+		}
+	}
+	//判断新解是否满足容量约束
+		for(i=0; i<vNum; i++){
+		   if(demandCounter[i] > capacities){
+		      *dis += capacities;
+		   }
+		}
 
-	costs[depot] = dis;
+
+	costs[depot] = *dis;
 	
 	improvedTryCounter[0] =1;
 	improvedTryCounter[1]=1;
@@ -207,42 +226,47 @@ __global__ void simulatedAnnealingKernel(int *route,
 		}
 
 		//计算新解的总距离
-		double newDis = 0;
+	   *newDis = 0;
 	    for(i =1; i<len-1;i++){
-		 int pre = solution[i];
-		 int cur = solution[i+1];
-		 newDis += distances[(pre-1)*nodeNum+cur-1];
+		 pre = solution[i];
+		 cur = solution[i+1];
+		*newDis += distances[(pre-1)*nodeNum+cur-1];
 	    }
 		//判断新解是否满足容量约束
 		for(i=0; i<vNum; i++){
 		   if(demandCounter[i] > capacities){
-		      newDis += capacities;
+		      *newDis += capacities;
 		   }
 		}
 
 		//如果新解比当前解更优，替换
-		if(newDis < dis){
+		if(*newDis < *dis){
 			for(i = 0;i< len; i++){
 				curSolution[i] = solution[i];
 			}
-			dis = newDis;
+			*dis = *newDis;
 			improvedTryCounter[strategy] ++;
 			//如果比最优解更优，替换最优解
-			if( newDis < costs[depot]){
+			if( *newDis < costs[depot]){
 				for(i =0; i< len; i++){
 				   bestSolution[i] = solution[i];
 				}
-				costs[depot] = newDis;
+				costs[depot] = *newDis;
 			}
 		}else{
 			//否则以概率 exp((dis - newDis)/temp)替换
 			*dice =randDouble[(nextRand+threadIdx.x*20)%1000];
 			nextRand = (++nextRand)%1000;
-			if(*dice < exp((dis - newDis)/temp)){
+			if(*dice < exp((*dis - *newDis)/temp)){
 			     for(i = 0;i< len; i++){
 				   curSolution[i] = solution[i];
 			     }
-			     dis = newDis;
+			     *dis = *newDis;
+			}else{
+				//如果不接受新解，则还原解
+			    for(i = 0;i< len; i++){
+				   solution[i] = curSolution[i];
+			    }
 			}
 		}
 		temp *=1 - cr;
@@ -252,17 +276,17 @@ __global__ void simulatedAnnealingKernel(int *route,
 
 
 int main(){
-	const int nodeNum = 97;
-	const int depotNum = 9;
-	const int vehicleNum = 1;
+	const int nodeNum = 52;
+	const int depotNum = 2;
+	const int vehicleNum = 6;
 	const int solutionLen = nodeNum - depotNum + vehicleNum + 1;
 	int r[depotNum*solutionLen] = {0};
 	int demand[nodeNum] = {0};
 	double dis[nodeNum*nodeNum]={0};
 	double randDouble[1000] = {0};
 	int randInt[1000] ={0};
-	int capacities = 200;
-	int vNum =1;
+	int capacities = 5000;
+	int vNum =6;
 
 
 	ifstream routeStream("routes.txt");
@@ -320,7 +344,7 @@ int main(){
 	e = cudaMalloc((void**)&d_randDouble,sizeof(double)*1000);
 	e = cudaMemcpy(d_randDouble,randDouble,sizeof(double)*1000,cudaMemcpyHostToDevice);
 	
-	simulatedAnnealingKernel<<<1,depotNum>>>(d_r,d_costs,solutionLen,d_demand,d_dis,nodeNum,capacities,vNum,d_randInt,d_randDouble,10000,0.001);
+	simulatedAnnealingKernel<<<1,depotNum>>>(d_r,d_costs,solutionLen,d_demand,d_dis,nodeNum,capacities,vNum,d_randInt,d_randDouble,100000,0.001);
 	
 	e = cudaMemcpy(r,d_r,sizeof(int)*depotNum*solutionLen,cudaMemcpyDeviceToHost);
 	e = cudaMemcpy(costs,d_costs,sizeof(double)*depotNum,cudaMemcpyDeviceToHost);
