@@ -3,16 +3,19 @@ directory = 'Vrp-All\Instances 2E-VRP\';
 dataSets = dir(directory);
 counter = 1;
 duplicate = 5;
-for setCounter = 1:size(dataSets,1)
-    if dataSets(setCounter).isdir ==1 && strcmp(dataSets(setCounter).name,'.') ==0 && strcmp(dataSets(setCounter).name,'..') == 0 &&strcmp(dataSets(setCounter).name,'Set1 - aggiornato')==0 ...
-        && strcmp(dataSets(setCounter).name,'Set4 - aggiornato')==0
+for setCounter = 7:size(dataSets,1)
+    if dataSets(setCounter).isdir ==1 && strcmp(dataSets(setCounter).name,'.') ==0 && strcmp(dataSets(setCounter).name,'..') == 0 &&strcmp(dataSets(setCounter).name,'Set1 - aggiornato')==0 
         dataSources = dir(strcat(directory,dataSets(setCounter).name,'\*.dat'));
         for sourceCounter = 1:size(dataSources,1)  
-            fileName = strcat(directory,dataSets(setCounter).name,'\',dataSources(sourceCounter).name);
+            fileName =strcat(directory,dataSets(setCounter).name,'\',dataSources(sourceCounter).name);
             fprintf(1,'%s\n',fileName);
             for kk = 1: duplicate
             time1 = now;
-            [desc,nodes,satellites,demands] = DataReader(fileName);%Vrp-All\Instances\Instance50-1.dat');%
+            if strcmp(dataSets(setCounter).name,'Set4 - aggiornato') == 1
+                [desc,nodes,satellites,demands] = InstanceDataReader(fileName);
+            else
+                [desc,nodes,satellites,demands] = DataReader(fileName);%Vrp-All\Instances\Instance50-1.dat');%
+            end
             [nodeList,depotNum,capacities,distances,demands3] = DataForPhase3(desc,nodes,satellites,demands);
             customerNum = size(nodeList,1) - depotNum;
             
@@ -33,7 +36,37 @@ for setCounter = 1:size(dataSets,1)
                 randInt = gpuArray(int32(randi(1000000,1,1000)));
                 randDouble = gpuArray(rand(1,1000));
                 gpuCapacities = gpuArray(capacities);
-         
+                %%
+    spec = '%d';
+    for i = 1:maxSolutionLen-1
+        spec = strcat(spec,' %d ');
+    end
+    spec = strcat(spec,'\n');
+
+    fId = fopen('routes.txt','w');
+    fprintf(fId,spec,gpuRoute);
+    fclose(fId);
+
+    spec = '%d %d\n';
+    fId = fopen('randInt.txt');
+    fprintf(fId,spec,randInt);
+
+    spec = '%12.8f %12.8f\n';
+    fId = fopen('randDouble.txt');
+    fprintf(fId,spec,randDouble);
+
+    fId = fopen('demands.txt','w');
+    fprintf(fId,'%d\n',demands);
+    fclose(fId);
+    spec ='%12.8f';
+    for i = 1:size(nodeList,1)-1
+        spec=strcat(spec,' %12.8f');
+    end
+    spec=strcat(spec,'\n');
+    fId = fopen('distances.txt','w');
+    fprintf(fId,spec,distances);
+    fclose(fId);
+%%
                 k = parallel.gpu.CUDAKernel('kernel.ptx','kernel.cu','simulatedAnnealingKernel');
                 k.ThreadBlockSize = double([depotNum 1]);
                 costs = gpuArray(zeros(1,depotNum));
@@ -74,37 +107,7 @@ for setCounter = 1:size(dataSets,1)
     end
 end
 
-%%
-%     spec = '%d';
-%     for i = 1:maxSolutionLen-1
-%         spec = strcat(spec,' %d ');
-%     end
-%     spec = strcat(spec,'\n');
-%
-%     fId = fopen('routes.txt','w');
-%     fprintf(fId,spec,gpuRoute);
-%     fclose(fId);
-%
-%     spec = '%d %d\n';
-%     fId = fopen('randInt.txt');
-%     fprintf(fId,spec,randInt);
-%
-%     spec = '%12.8f %12.8f\n';
-%     fId = fopen('randDouble.txt');
-%     fprintf(fId,spec,randDouble);
-%
-%     fId = fopen('demands.txt','w');
-%     fprintf(fId,'%d\n',demands);
-%     fclose(fId);
-%     spec ='%12.8f';
-%     for i = 1:size(nodeList,1)-1
-%         spec=strcat(spec,' %12.8f');
-%     end
-%     spec=strcat(spec,'\n');
-%     fId = fopen('distances.txt','w');
-%     fprintf(fId,spec,distances);
-%     fclose(fId);
-%%
+
 
 
 

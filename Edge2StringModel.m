@@ -1,5 +1,6 @@
 function sm = Edge2StringModel(x,customerNum)
   sm =[];
+  x = int32(x);
   nodeNum = sqrt(size(x,1)/2);
   depotNum = nodeNum - customerNum;
   counter = 1;
@@ -16,7 +17,7 @@ function sm = Edge2StringModel(x,customerNum)
               pre = j;
               after = 1;
               while pre~= i
-                  while x((pre-1)*nodeNum+after) == 0
+                  while x((pre-1)*nodeNum+after) < 0.0000001
                       after = after + 1;
                   end
                   sm(counter) = after;
