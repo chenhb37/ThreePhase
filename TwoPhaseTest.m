@@ -7,11 +7,11 @@ for setCounter = 1:size(dataSets,1)
     if dataSets(setCounter).isdir ==1 && strcmp(dataSets(setCounter).name,'.') ==0 && strcmp(dataSets(setCounter).name,'..') == 0 &&strcmp(dataSets(setCounter).name,'Set1 - aggiornato')==0 ...
         && strcmp(dataSets(setCounter).name,'Set4 - aggiornato')==0
         dataSources = dir(strcat(directory,dataSets(setCounter).name,'\*.dat'));
-        for sourceCounter = 1:size(dataSources,1)
-            time1 = now;
+        for sourceCounter = 1:size(dataSources,1)  
             fileName = strcat(directory,dataSets(setCounter).name,'\',dataSources(sourceCounter).name);
             fprintf(1,'%s\n',fileName);
             for kk = 1: duplicate
+            time1 = now;
             [desc,nodes,satellites,demands] = DataReader(fileName);%Vrp-All\Instances\Instance50-1.dat');%
             [nodeList,depotNum,capacities,distances,demands3] = DataForPhase3(desc,nodes,satellites,demands);
             customerNum = size(nodeList,1) - depotNum;

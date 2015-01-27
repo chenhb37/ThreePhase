@@ -8,10 +8,10 @@ for setCounter = 1:size(dataSets,1)
         && strcmp(dataSets(setCounter).name,'Set4 - aggiornato')==0
         dataSources = dir(strcat(directory,dataSets(setCounter).name,'\F*.dat'));
         for sourceCounter = 1:size(dataSources,1)
-            time1 = now;
             fileName = strcat(directory,dataSets(setCounter).name,'\',dataSources(sourceCounter).name);
             fprintf(1,'%s\n',fileName);
             for kk = 1: duplicate
+ 		time1 = now;
             [desc,nodes,satellites1,satellites2,demands] = DataReaderForPh3(fileName);%Vrp-All\Instances\Instance50-1.dat');%
             tempDesc = [desc(1)-desc(2),desc(3),desc(4),0,desc(7),0,desc(10)];
             [nodeList,depotNum,capacities,distances,demands3] = DataForPhase3(tempDesc,nodes,satellites2,demands);
