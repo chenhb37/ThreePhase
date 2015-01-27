@@ -131,10 +131,13 @@
                   v = y(i,j)/capacity;
                   x((i-1)*nodeNum+cus+nodeNum^2) =  x((i-1)*nodeNum+cus+nodeNum^2)+ y(i,j);
                   x((i-1)*nodeNum+cus) =  x((i-1)*nodeNum+cus)+v;
-                  x((cus-1)*nodeNum+cus) = x((cus-1)*nodeNum+cus)+v;
+                  x((cus-1)*nodeNum+1) = x((cus-1)*nodeNum+1)+v;
               end
          end
       end
-      fval = fval+srCost;
+      if srCost > 0
+           fval = fval+srCost;
+      end
+     
 end
 

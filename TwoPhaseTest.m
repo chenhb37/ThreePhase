@@ -13,7 +13,7 @@ for setCounter = 1:size(dataSets,1)
             fprintf(1,'%s\n',fileName);
             for kk = 1: duplicate
             [desc,nodes,satellites,demands] = DataReader(fileName);%Vrp-All\Instances\Instance50-1.dat');%
-            [nodeList,depotNum,capacities,distances,demands] = DataForPhase3(desc,nodes,satellites,demands);
+            [nodeList,depotNum,capacities,distances,demands3] = DataForPhase3(desc,nodes,satellites,demands);
             customerNum = size(nodeList,1) - depotNum;
             
             repeat = 100;
@@ -27,7 +27,7 @@ for setCounter = 1:size(dataSets,1)
             
             routes = [];
             while ii < repeat
-                routes = AllocatePhase3(nodeList,depotNum,vehicleNum,capacities,distances,demands,routes);
+                routes = AllocatePhase3(nodeList,depotNum,vehicleNum,capacities,distances,demands3,routes);
                 maxSolutionLen = customerNum + vehicleNum + 1; %默认每个depot有四辆车
                 gpuRoute = gpuArray(routes);
                 randInt = gpuArray(int32(randi(1000000,1,1000)));
@@ -39,7 +39,7 @@ for setCounter = 1:size(dataSets,1)
                 costs = gpuArray(zeros(1,depotNum));
                 cap = desc(5);
                 vNum = desc(7);
-                [routes,costs] = feval(k,gpuRoute,costs,maxSolutionLen,demands,distances,int32(size(nodeList,1)),cap,vNum,randInt,randDouble,10000,0.001);
+                [routes,costs] = feval(k,gpuRoute,costs,maxSolutionLen,demands3,distances,int32(size(nodeList,1)),cap,vNum,randInt,randDouble,10000,0.001);
                 routes = gather(routes);
                 costs = gather(costs);
                 

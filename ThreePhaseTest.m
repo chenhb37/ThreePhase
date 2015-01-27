@@ -8,6 +8,7 @@ for setCounter = 1:size(dataSets,1)
         && strcmp(dataSets(setCounter).name,'Set4 - aggiornato')==0
         dataSources = dir(strcat(directory,dataSets(setCounter).name,'\F*.dat'));
         for sourceCounter = 1:size(dataSources,1)
+            time1 = now;
             fileName = strcat(directory,dataSets(setCounter).name,'\',dataSources(sourceCounter).name);
             fprintf(1,'%s\n',fileName);
             for kk = 1: duplicate
@@ -76,17 +77,19 @@ for setCounter = 1:size(dataSets,1)
                 ii = ii+1;
         
             end
+            time2 = now;
+            tc = time2 - time1;
+            tcs = day(tc)*3600*24+hour(tc)*3600+minute(tc)*60+second(tc);
            %% store the result in excel
             %dataRecord = {'dataPath','ns','costs','costs1','costs2'}
-            dataRecord = {strcat(directory,dataSets(setCounter).name,'\',dataSources(sourceCounter).name),desc(2),desc(3),bestCost,costs1,costs2,costs3,num2str(sm1),num2str(sm2),num2str(sm3)};
+            dataRecord = {strcat(directory,dataSets(setCounter).name,'\',dataSources(sourceCounter).name),desc(2),desc(3),bestCost,costs1,costs2,costs3,num2str(sm1),num2str(sm2),num2str(sm3),num2str(tcs)};
             [status,message]= xlswrite('result\ThreePhaseResult.xls',dataRecord,'version1',strcat('A',num2str(counter)));
             counter = counter + 1;
             end
         end
     end
 end
-%                 %%
-        
+%                 %%  
 %                 spec = '%d';
 %                 for i = 1:maxSolutionLen-1
 %                     spec = strcat(spec,' %d ');
