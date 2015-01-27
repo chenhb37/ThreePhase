@@ -6,7 +6,7 @@ duplicate = 5;
 for setCounter = 1:size(dataSets,1)
     if dataSets(setCounter).isdir ==1 && strcmp(dataSets(setCounter).name,'.') ==0 && strcmp(dataSets(setCounter).name,'..') == 0 &&strcmp(dataSets(setCounter).name,'Set1 - aggiornato')==0 ...
         && strcmp(dataSets(setCounter).name,'Set4 - aggiornato')==0
-        dataSources = dir(strcat(directory,dataSets(setCounter).name,'\F*.dat'));
+        dataSources = dir(strcat(directory,dataSets(setCounter).name,'\*.dat'));
         for sourceCounter = 1:size(dataSources,1)
             fileName = strcat(directory,dataSets(setCounter).name,'\',dataSources(sourceCounter).name);
             fprintf(1,'%s\n',fileName);
