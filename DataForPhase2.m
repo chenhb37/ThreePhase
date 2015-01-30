@@ -1,11 +1,7 @@
-function [ nodeNum,depotNum,distances,dems ]...
-= DataForPhase2( depotList,satelliteList,demands,routes,rl)
+function dems= DataForPhase2( depotNum,customerNum,demands,routes,rl)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-depotNum = size(depotList,1);
-nodeNum = depotNum + size(satelliteList,1);
-nodeList = [depotList;satelliteList];
-distances = GetDistanceMatrix(nodeList);
+nodeNum = depotNum + customerNum;
 dems = zeros(1,nodeNum);
 for i = depotNum+1:nodeNum
     depot = i - depotNum;

@@ -13,3 +13,4 @@ function [desc,nodes,satellites1,satellites2,demands] = DataReaderForPh3(fileNam
  demands = cell2mat(textscan(fileId,'%*f %f',nodeInfo(1)-nodeInfo(2)-nodeInfo(3),'HeaderLines',1));
  desc = [nodeInfo;fleetInfo];
  fclose(fileId);
+end

@@ -1,4 +1,4 @@
-function [desc,nodes,satellites,demands] = DataReader(fileName)
+function [desc,distances,demands] = EdgeReader(fileName)
 %DATAREADER Summary of this function goes here
 %   Detailed explanation goes here
  [fileId] = fopen(fileName);
@@ -8,10 +8,9 @@ function [desc,nodes,satellites,demands] = DataReader(fileName)
  fleetInfo= cell2mat(textscan(fileId,'%*s : %d',2,'HeaderLines',3));
  temp = cell2mat(textscan(fileId,'%*s %d',2,'HeaderLines',1));
  fleetInfo = [fleetInfo;temp];
- %node sate
- nodes = cell2mat(textscan(fileId,'%*d %f %f',nodeInfo(1)-nodeInfo(2),'HeaderLines',2));
- satellites = cell2mat(textscan(fileId,'%*d %f %f',nodeInfo(2),'HeaderLines',2));
- demands = cell2mat(textscan(fileId,'%*f %f',nodeInfo(1)-nodeInfo(2),'HeaderLines',2));
+ %distance matrix
+ distances = cell2mat(textscan(fileId,'%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f',nodeInfo(1),'HeaderLines',2));
+ demands = cell2mat(textscan(fileId,'%*f %f',nodeInfo(1),'HeaderLines',3));
 %  header = textscan(fileId,'%d %d %d %d',1,'delimiter',',');
 %  nodeNum = header{1};
 %  satelliteNum = header{2};
@@ -21,4 +20,3 @@ function [desc,nodes,satellites,demands] = DataReader(fileName)
  desc = [nodeInfo;fleetInfo];
  fclose(fileId);
 end
-

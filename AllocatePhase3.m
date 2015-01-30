@@ -1,4 +1,4 @@
-function [ routes ] = AllocatePhase3(nodeList,depotNum,vNum,capacities,distances,demands,routes)
+function [ routes ] = AllocatePhase3(nodeNum,depotNum,vNum,capacity,distances,demands,routes)
 % funtion: 根据当前的状态调整各个depot的运输量
 %       1， 初始状态下根据customer到各个depot的距离进行分配，每个cusomter都尽可能的分配到最近的depot
 %       2,  常态下根据depot的承载效率（rouDis/Load, rouDis 为路径总长度，Load是路径总的负载，其物理意义为
@@ -11,20 +11,20 @@ function [ routes ] = AllocatePhase3(nodeList,depotNum,vNum,capacities,distances
 %       demands: 客户的需求量列表
 %       routes: 之前计算的各个装配中心的路径
 %% 初始状态
-maxSolutionLen = size(nodeList,1)-depotNum + 1 + vNum; 
+maxSolutionLen = nodeNum-depotNum + 1 + vNum; 
 
 if isempty(routes)
     routes = int32(zeros(1,maxSolutionLen*depotNum));
     for i = 1:depotNum
         routes((i-1)*maxSolutionLen+1:(i-1)*maxSolutionLen+1+vNum) = i.* int32(ones(1,1+vNum));
     end
-    for i = depotNum+1:size(nodeList,1)
+    for i = depotNum+1:nodeNum
         customer = i;
         depotSeq = SortDepotInDistance(depotNum,distances,customer);
-        [successFlag,customer,routes] = AllocateCusToDepot(depotSeq,capacities,distances,demands,routes,maxSolutionLen,customer);
+        [successFlag,customer,routes] = AllocateCusToDepot(depotSeq,capacity,distances,demands,routes,maxSolutionLen,customer);
         while successFlag == 0
             depotSeq = SortDepotInDistance(depotNum,distances,customer);
-            [successFlag,customer,routes] = AllocateCusToDepot(depotSeq,capacities,distances,demands,routes,maxSolutionLen,customer);
+            [successFlag,customer,routes] = AllocateCusToDepot(depotSeq,capacity,distances,demands,routes,maxSolutionLen,customer);
         end
     end
     
@@ -58,7 +58,7 @@ else
     for i = 1:depotNum
         depotTemp = depotSeq(i);
         routeDemand = GetRouteDemand(routes((depotTemp-1)*maxSolutionLen+1:(depotTemp)*maxSolutionLen),demands);
-        if depotSeq(i)~= lowEffDepot && routeDemand + demands(lowEffCus) < capacities(depotTemp);
+        if depotSeq(i)~= lowEffDepot && routeDemand + demands(lowEffCus) < capacity;
             route = routes((depotTemp-1)*maxSolutionLen+1:(depotTemp*maxSolutionLen));
             [~,len] = min(route);
             ip = 1+randi(len-2);
@@ -107,7 +107,7 @@ for i = 1:depotNum
     end
 end
 end
-function [successFlag,customer,routes] = AllocateCusToDepot(depotSeq,capacities,distances,demands,routes,solutionLen,customer)
+function [successFlag,customer,routes] = AllocateCusToDepot(depotSeq,capacity,distances,demands,routes,solutionLen,customer)
 %分配节点
 successFlag = 1;
 depotNum = size(depotSeq,2);
@@ -115,7 +115,7 @@ for depotIndex = 1:depotNum
     depot = depotSeq(depotIndex);
     curRoute = routes((depot-1)*solutionLen+1:depot*solutionLen);
     totalDemand = GetRouteDemand(curRoute,demands);
-    if totalDemand + demands(customer) <= capacities(depot)
+    if totalDemand + demands(customer) <= capacity
         [~,i] = min(curRoute);
         curRoute(i) = curRoute(i-1);
         curRoute(i-1) = customer;
@@ -129,7 +129,7 @@ for depotIndex = 1:depotNum
         curEff = distances(customer,depot)/(demands(customer)+1);
         
         %如果替换后 依然满足站点的最大运输量约束，则进行替换
-        if curEff < value && totalDemand -demands(curRoute(replace)) + demands(customer) <= capacities(depot)
+        if curEff < value && totalDemand -demands(curRoute(replace)) + demands(customer) <= capacity
             temp =curRoute(replace);
             curRoute(replace) = customer;
             customer = temp;
